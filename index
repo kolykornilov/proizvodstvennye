@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Производительские</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eaeff5;
+            padding-bottom: 10px;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #7f8c9d;
+            border-radius: 12px 12px 0 0;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+        .tab:hover {
+            color: #3498db;
+            background: #f0f7ff;
+        }
+        .tab.active {
+            background: white;
+            color: #3498db;
+            font-weight: 600;
+            box-shadow: 0 -2px 10px rgba(52, 152, 219, 0.15);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .doc-type-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid #eaeff5;
+        }
+        .doc-type-option {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            border: 2px solid #e1e8f0;
+        }
+        .doc-type-option:hover {
+            border-color: #3498db;
+            background: #f0f7ff;
+        }
+        .doc-type-option.active {
+            border-color: #3498db;
+            background: #e3f2fd;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        }
+        .doc-type-option label {
+            display: block;
+            cursor: pointer;
+        }
+        .doc-type-option input[type="radio"] {
+            display: none;
+        }
+        .form-group {
+            margin-bottom: 22px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 1.05rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e1e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: #f8fafc;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            background: white;
+        }
+        .days-section {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 1px solid #eaeff5;
+        }
+        .days-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        .days-counter {
+            color: #3498db;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin: 10px 0 20px;
+            padding: 8px 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 180px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2980b9, #2573a7);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+        }
+        .btn-export {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        .btn-export:hover {
+            background: linear-gradient(135deg, #27ae60, #219653);
+        }
+        .btn-add-day {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        .btn-add-day:hover {
+            background: linear-gradient(135deg, #8e44ad, #7d3c98);
+        }
+        .btn-clear-objects {
+            background: linear-gradient(135deg, #7f8c8d, #34495e);
+            color: white;
+        }
+        .btn-clear-objects:hover {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+        }
+        .btn-edit {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        .btn-edit:hover {
+            background: linear-gradient(135deg, #2980b9, #2573a7);
+        }
+        .controls {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 25px 0;
+            justify-content: center;
+        }
+        .day-item {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #eaeff5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+        .day-item:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            border-color: #3498db;
+        }
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeff5;
+        }
+        .day-number {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .hours-display {
+            background: #e3f2fd;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin: 25px 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            box-shadow: inset 0 2px 8px rgba(52, 152, 219, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #eaeff5;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.05rem;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background: #f8fafc;
+        }
+        .month-group {
+            margin: 25px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        .month-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .month-total {
+            background: #e3f2fd;
+            padding: 20px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: #2980b9;
+            border-top: 2px solid #3498db;
+        }
+        .objects-section {
+            margin: 25px 0;
+        }
+        .objects-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #eaeff5;
+        }
+        .object-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #eaeff5;
+            transition: all 0.2s ease;
+        }
+        .object-item:hover {
+            border-color: #3498db;
+            transform: translateX(5px);
+        }
+        .clear-buttons {
+            display: flex;
+            gap: 16px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .date-warning {
+            color: #e67e22;
+            background: #fff8e1;
+            padding: 12px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 0.95rem;
+            border-left: 3px solid #f39c12;
+        }
+        /* Стили для вкладки графика */
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin: 25px 0;
+        }
+        .chart-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .chart-header h2 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .chart-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        .chart-filters {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .chart-filter-group {
+            text-align: center;
+            min-width: 180px;
+        }
+        .chart-filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .chart-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 14px;
+            border: 1px solid #eaeff5;
+        }
+        .chart-tab {
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            border: 2px solid #e1e8f0;
+        }
+        .chart-tab:hover {
+            border-color: #3498db;
+            background: #f0f7ff;
+        }
+        .chart-tab.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-color: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        }
+        .chart-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card.orange {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa502 100%);
+        }
+        .stat-card.green {
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+        }
+        .stat-card.purple {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        canvas {
+            max-width: 100%;
+            height: 400px !important;
+        }
+        
+        /* Стили для модального окна редактирования */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eaeff5;
+        }
+        .modal-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .close-modal {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        @media (max-width: 768px) {
+            .card {
+                padding: 20px;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+            .doc-type-group {
+                flex-direction: column;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                min-width: auto;
+            }
+            .clear-buttons {
+                flex-direction: column;
+            }
+            .chart-filters {
+                flex-direction: column;
+                align-items: center;
+            }
+            .chart-tabs {
+                flex-direction: column;
+            }
+            .chart-tab {
+                width: 100%;
+            }
+            canvas {
+                height: 300px !important;
+            }
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Производительские</h1>
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('main')">📝 Новая запись</div>
+                <div class="tab" onclick="switchTab('objects')">🏢 Объекты</div>
+                <div class="tab" onclick="switchTab('records')">📋 Все записи</div>
+                <div class="tab" onclick="switchTab('chart')">📈 График</div>
+            </div>
+            <div class="tab-content active" id="main-tab">
+                <div class="doc-type-group">
+                    <div class="doc-type-option active" onclick="selectDocType('наряд')">
+                        <label>
+                            <input type="radio" name="docType" value="наряд" checked> Наряд
+                        </label>
+                        <small>до 30 дней, разница не более 30 календарных дней</small>
+                    </div>
+                    <div class="doc-type-option" onclick="selectDocType('распоряжение')">
+                        <label>
+                            <input type="radio" name="docType" value="распоряжение"> Распоряжение
+                        </label>
+                        <small>только 1 день</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="docNumber">Номер документа:</label>
+                    <input type="text" id="docNumber" placeholder="Введите номер">
+                </div>
+                <div class="form-group">
+                    <label for="objectSelect">Место выполнения (объект):</label>
+                    <select id="objectSelect">
+                        <option value="">Выберите объект</option>
+                    </select>
+                </div>
+                <div class="days-section">
+                    <h3>📅 Дни выполнения работ</h3>
+                    <div class="days-counter">
+                        Текущее количество: <span id="daysCount">0</span>/30
+                    </div>
+                    <div id="dateWarning" class="date-warning" style="display: none;"></div>
+                    <button class="btn btn-add-day" onclick="addDay()">➕ Добавить день</button>
+                    <div id="daysContainer"></div>
+                </div>
+                <div class="hours-display">
+                    💰 Общее количество часов: <span id="totalHours">0.00</span>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="saveOrder()">✅ Сохранить запись</button>
+                    <button class="btn btn-warning" onclick="clearForm()">🔄 Очистить форму</button>
+                </div>
+            </div>
+            <div class="tab-content" id="objects-tab">
+                <div class="objects-section">
+                    <h3>🏢 Управление объектами</h3>
+                    <div class="form-group">
+                        <label for="newObject">Название нового объекта:</label>
+                        <input type="text" id="newObject" placeholder="Введите название объекта">
+                    </div>
+                    <button class="btn btn-primary" onclick="addObject()">➕ Добавить объект</button>
+                    <div class="clear-buttons">
+                        <button class="btn btn-clear-objects" onclick="clearAllObjects()">🧹 Очистить все объекты</button>
+                    </div>
+                    <h4>📋 Список объектов:</h4>
+                    <div class="objects-list" id="objectsList"></div>
+                </div>
+            </div>
+            <div class="tab-content" id="records-tab">
+                <div class="controls">
+                    <button class="btn btn-export" onclick="exportToExcel()">📥 Выгрузить в Excel</button>
+                    <button class="btn btn-danger" onclick="clearAllRecords()">🗑️ Очистить все записи</button>
+                </div>
+                <h2>📋 Все производительские записи</h2>
+                <div id="groupedRecords"></div>
+            </div>
+            <div class="tab-content" id="chart-tab">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2>📈 Статистика рабочих часов</h2>
+                        <p>Анализ отработанных часов по разным периодам</p>
+                    </div>
+                    <div class="chart-filters">
+                        <div class="chart-filter-group">
+                            <label for="chartPeriod">📅 Период</label>
+                            <select id="chartPeriod" class="btn" onchange="updateChart()">
+                                <option value="week">Неделя</option>
+                                <option value="month" selected>Месяц</option>
+                                <option value="quarter">Квартал</option>
+                                <option value="year">Год</option>
+                            </select>
+                        </div>
+                        <div class="chart-filter-group">
+                            <label for="chartType">📊 Тип графика</label>
+                            <select id="chartType" class="btn" onchange="updateChart()">
+                                <option value="bar">Столбчатый</option>
+                                <option value="line" selected>Линейный</option>
+                                <option value="area">Областной</option>
+                            </select>
+                        </div>
+                        <div class="chart-filter-group">
+                            <label for="chartObject">🏢 Объект</label>
+                            <select id="chartObject" class="btn" onchange="updateChart()">
+                                <option value="all">Все объекты</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-tabs">
+                        <div class="chart-tab active" onclick="switchChartTab('daily')">📆 По дням</div>
+                        <div class="chart-tab" onclick="switchChartTab('monthly')">📆 По месяцам</div>
+                        <div class="chart-tab" onclick="switchChartTab('byType')">📄 По типу документов</div>
+                    </div>
+                    <div style="height: 400px; margin: 20px 0;">
+                        <canvas id="hoursChart"></canvas>
+                    </div>
+                    <div class="chart-actions">
+                        <button class="btn btn-export" onclick="downloadChart()">💾 Сохранить график</button>
+                        <button class="btn btn-warning" onclick="resetChartFilters()">🔄 Сбросить фильтры</button>
+                    </div>
+                    <div class="summary-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Всего часов</div>
+                            <div class="stat-value" id="totalHoursStat">0.00</div>
+                        </div>
+                        <div class="stat-card orange">
+                            <div class="stat-label">Среднее в день</div>
+                            <div class="stat-value" id="avgHoursStat">0.00</div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-label">Максимум часов</div>
+                            <div class="stat-value" id="maxHoursStat">0.00</div>
+                        </div>
+                        <div class="stat-card purple">
+                            <div class="stat-label">Дней с работой</div>
+                            <div class="stat-value" id="daysCountStat">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для редактирования записи -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">✏️ Редактирование записи</div>
+                <button class="close-modal" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div id="editFormContainer">
+                <!-- Форма редактирования будет загружаться сюда -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveEditedOrder()">✅ Сохранить изменения</button>
+                <button class="btn btn-warning" onclick="closeEditModal()">❌ Отменить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let currentDays = [];
+        let maxDays = 30; // По умолчанию для наряда
+        let hoursChart = null;
+        let currentChartTab = 'daily';
+        let editingOrderId = null; // ID записи, которую редактируем
+        
+        // Установка текущей даты по умолчанию
+        document.addEventListener('DOMContentLoaded', function() {
+            loadObjects();
+            loadGroupedOrders();
+            addDay(); // Добавляем первый день при загрузке
+            loadChartObjects();
+            initChart();
+        });
+        
+        function selectDocType(type) {
+            document.querySelectorAll('input[name="docType"]').forEach(radio => {
+                radio.checked = (radio.value === type);
+            });
+            
+            document.querySelectorAll('.doc-type-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            if (type === 'наряд') {
+                document.querySelector('.doc-type-option:first-child').classList.add('active');
+                maxDays = 30;
+            } else {
+                document.querySelector('.doc-type-option:last-child').classList.add('active');
+                maxDays = 1;
+                
+                // Если распоряжение и больше одного дня, оставляем только первый
+                if (currentDays.length > 1) {
+                    currentDays = [currentDays[0]];
+                    renderAllDays();
+                }
+            }
+            
+            updateDaysCount();
+            checkDateConstraints();
+        }
+        
+        function switchTab(tabName) {
+            // Скрыть все табы
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Снять активность со всех кнопок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Показать выбранный таб
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Активировать соответствующую кнопку
+            const tabButtons = document.querySelectorAll('.tab');
+            if (tabName === 'main') tabButtons[0].classList.add('active');
+            if (tabName === 'objects') tabButtons[1].classList.add('active');
+            if (tabName === 'records') tabButtons[2].classList.add('active');
+            if (tabName === 'chart') tabButtons[3].classList.add('active');
+            
+            // При переключении на записи, обновляем группировку
+            if (tabName === 'records') {
+                loadGroupedOrders();
+            }
+            
+            // При переключении на график, обновляем данные
+            if (tabName === 'chart') {
+                updateChart();
+            }
+        }
+        
+        function formatDateString(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+        
+        function getMonthName(dateString) {
+            const date = new Date(dateString);
+            const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            return `${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+        
+        function calculateDayHours(dayIndex) {
+            const day = currentDays[dayIndex];
+            if (!day) return 0;
+            
+            if (day.startTime && day.endTime) {
+                const start = new Date(`2000-01-01T${day.startTime}`);
+                const end = new Date(`2000-01-01T${day.endTime}`);
+                
+                if (end <= start) {
+                    end.setDate(end.getDate() + 1);
+                }
+                
+                const diffMs = end - start;
+                const diffHours = diffMs / (1000 * 60 * 60);
+                day.hours = diffHours.toFixed(2);
+                return diffHours;
+            }
+            return 0;
+        }
+        
+        function updateTotalHours() {
+            const totalHours = currentDays.reduce((sum, day) => sum + (parseFloat(day.hours) || 0), 0);
+            document.getElementById('totalHours').textContent = totalHours.toFixed(2);
+        }
+        
+        function addDay() {
+            if (currentDays.length >= maxDays) {
+                alert(maxDays === 1 ? 
+                    'Распоряжение выдается только на 1 день!' : 
+                    'Максимальное количество дней (30) достигнуто!');
+                return;
+            }
+            
+            const dayIndex = currentDays.length;
+            const today = new Date().toISOString().split('T')[0];
+            
+            const day = {
+                id: Date.now() + dayIndex,
+                date: today,
+                startTime: '',
+                endTime: '',
+                hours: '0.00'
+            };
+            
+            currentDays.push(day);
+            renderDay(dayIndex);
+            updateDaysCount();
+            updateTotalHours();
+            checkDateConstraints();
+        }
+        
+        function renderDay(dayIndex) {
+            const day = currentDays[dayIndex];
+            const daysContainer = document.getElementById('daysContainer');
+            
+            const dayElement = document.createElement('div');
+            dayElement.className = 'day-item';
+            dayElement.id = `day-${day.id}`;
+            dayElement.innerHTML = `
+                <div class="day-header">
+                    <span class="day-number">📅 День ${dayIndex + 1}</span>
+                    ${currentDays.length > 1 || maxDays > 1 ? `<button class="btn btn-danger" style="padding: 8px 15px; min-width: auto; font-size: 0.9rem;" onclick="removeDay(${dayIndex})">🗑️ Удалить</button>` : ''}
+                </div>
+                <div class="form-group">
+                    <label>Дата:</label>
+                    <input type="date" value="${day.date}" onchange="updateDayDate(${dayIndex}, this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Время начала:</label>
+                    <input type="time" onchange="updateDayTime(${dayIndex}, 'start', this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Время окончания:</label>
+                    <input type="time" onchange="updateDayTime(${dayIndex}, 'end', this.value)">
+                </div>
+                <div class="hours-display">
+                    ⏰ Часов за день: <span id="day-hours-${dayIndex}">0.00</span>
+                </div>
+            `;
+            
+            daysContainer.appendChild(dayElement);
+        }
+        
+        function renderAllDays() {
+            const daysContainer = document.getElementById('daysContainer');
+            daysContainer.innerHTML = '';
+            // Сортируем дни по дате перед отображением
+            currentDays.sort((a, b) => new Date(a.date) - new Date(b.date));
+            currentDays.forEach((_, index) => {
+                renderDay(index);
+            });
+        }
+        
+        function updateDayDate(dayIndex, dateValue) {
+            if (currentDays[dayIndex]) {
+                currentDays[dayIndex].date = dateValue;
+                checkDateConstraints();
+            }
+        }
+        
+        function updateDayTime(dayIndex, type, timeValue) {
+            if (currentDays[dayIndex]) {
+                if (type === 'start') {
+                    currentDays[dayIndex].startTime = timeValue;
+                } else {
+                    currentDays[dayIndex].endTime = timeValue;
+                }
+                
+                const hours = calculateDayHours(dayIndex);
+                document.getElementById(`day-hours-${dayIndex}`).textContent = hours.toFixed(2);
+                updateTotalHours();
+            }
+        }
+        
+        function removeDay(dayIndex) {
+            if (currentDays.length <= 1 && maxDays === 1) {
+                alert('Для распоряжения обязательно должен быть один день!');
+                return;
+            }
+            
+            if (confirm('Вы уверены, что хотите удалить этот день?')) {
+                const dayId = currentDays[dayIndex].id;
+                currentDays.splice(dayIndex, 1);
+                
+                // Удаляем элемент из DOM
+                const dayElement = document.getElementById(`day-${dayId}`);
+                if (dayElement) {
+                    dayElement.remove();
+                }
+                
+                // Перерисовываем оставшиеся дни с новыми индексами
+                renderAllDays();
+                
+                updateDaysCount();
+                updateTotalHours();
+                checkDateConstraints();
+            }
+        }
+        
+        function updateDaysCount() {
+            document.getElementById('daysCount').textContent = currentDays.length;
+            
+            // Обновляем текст ограничения в зависимости от типа документа
+            const isOrder = document.querySelector('input[name="docType"]:checked').value === 'наряд';
+            const daysLimitText = document.querySelector('.days-counter');
+            
+            if (isOrder) {
+                daysLimitText.innerHTML = `Текущее количество: <span id="daysCount">${currentDays.length}</span>/30`;
+            } else {
+                daysLimitText.innerHTML = `Текущее количество: <span id="daysCount">${currentDays.length}</span>/1`;
+            }
+        }
+        
+        function checkDateConstraints() {
+            const isOrder = document.querySelector('input[name="docType"]:checked').value === 'наряд';
+            const dateWarning = document.getElementById('dateWarning');
+            dateWarning.style.display = 'none';
+            
+            if (!isOrder) return; // Для распоряжений проверка не нужна
+            
+            if (currentDays.length < 2) return; // Нужно минимум 2 дня для проверки
+            
+            // Сортируем дни по дате
+            const sortedDays = [...currentDays].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Проверка последовательности дат
+            let isSequential = true;
+            for (let i = 1; i < sortedDays.length; i++) {
+                const prevDate = new Date(sortedDays[i-1].date);
+                const currDate = new Date(sortedDays[i].date);
+                
+                // Проверяем, что текущая дата не раньше предыдущей
+                if (currDate < prevDate) {
+                    isSequential = false;
+                    break;
+                }
+            }
+            
+            if (!isSequential) {
+                dateWarning.textContent = '⚠️ Даты должны быть в хронологическом порядке! Автоматическая сортировка будет применена при сохранении.';
+                dateWarning.style.display = 'block';
+            }
+            
+            // Проверка разницы в 30 календарных дней
+            const firstDate = new Date(sortedDays[0].date);
+            const lastDate = new Date(sortedDays[sortedDays.length - 1].date);
+            const diffTime = Math.abs(lastDate - firstDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 30) {
+                dateWarning.textContent = `⚠️ Разница между первой (${formatDateString(sortedDays[0].date)}) и последней (${formatDateString(sortedDays[sortedDays.length - 1].date)}) датами составляет ${diffDays} дней. Максимум 30 календарных дней для одного наряда!`;
+                dateWarning.style.display = 'block';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        function loadObjects() {
+            const objects = JSON.parse(localStorage.getItem('workObjects')) || [];
+            const objectSelect = document.getElementById('objectSelect');
+            const objectsList = document.getElementById('objectsList');
+            
+            // Очищаем селект (кроме первого option)
+            while (objectSelect.options.length > 1) {
+                objectSelect.remove(1);
+            }
+            
+            // Очищаем список объектов
+            objectsList.innerHTML = '';
+            
+            objects.forEach((object, index) => {
+                // Добавляем в селект
+                const option = document.createElement('option');
+                option.value = object;
+                option.textContent = object;
+                objectSelect.appendChild(option);
+                
+                // Добавляем в список для управления
+                const objectItem = document.createElement('div');
+                objectItem.className = 'object-item';
+                objectItem.innerHTML = `
+                    <span>${object}</span>
+                    <button class="btn btn-danger" style="padding: 6px 12px; min-width: auto; font-size: 0.85rem;" onclick="deleteObject(${index})">🗑️</button>
+                `;
+                objectsList.appendChild(objectItem);
+            });
+        }
+        
+        function loadChartObjects() {
+            const objects = JSON.parse(localStorage.getItem('workObjects')) || [];
+            const chartObjectSelect = document.getElementById('chartObject');
+            
+            // Очищаем селект (кроме первого option)
+            while (chartObjectSelect.options.length > 1) {
+                chartObjectSelect.remove(1);
+            }
+            
+            objects.forEach(object => {
+                const option = document.createElement('option');
+                option.value = object;
+                option.textContent = object;
+                chartObjectSelect.appendChild(option);
+            });
+        }
+        
+        function addObject() {
+            const newObjectInput = document.getElementById('newObject');
+            const newObject = newObjectInput.value.trim();
+            
+            if (!newObject) {
+                alert('Введите название объекта!');
+                return;
+            }
+            
+            let objects = JSON.parse(localStorage.getItem('workObjects')) || [];
+            
+            // Проверяем на дубликаты
+            if (objects.includes(newObject)) {
+                alert('Такой объект уже существует!');
+                return;
+            }
+            
+            objects.push(newObject);
+            localStorage.setItem('workObjects', JSON.stringify(objects));
+            
+            // Очищаем поле ввода
+            newObjectInput.value = '';
+            
+            // Перезагружаем список объектов
+            loadObjects();
+            loadChartObjects();
+            
+            alert('✅ Объект успешно добавлен!');
+        }
+        
+        function deleteObject(index) {
+            if (confirm('Вы уверены, что хотите удалить этот объект?')) {
+                let objects = JSON.parse(localStorage.getItem('workObjects')) || [];
+                objects.splice(index, 1);
+                localStorage.setItem('workObjects', JSON.stringify(objects));
+                loadObjects();
+                loadChartObjects();
+            }
+        }
+        
+        function clearAllObjects() {
+            if (confirm('Вы уверены, что хотите очистить ВСЕ объекты? Это действие нельзя отменить!')) {
+                localStorage.removeItem('workObjects');
+                loadObjects();
+                loadChartObjects();
+                alert('✅ Все объекты успешно очищены!');
+            }
+        }
+        
+        function saveOrder() {
+            const docType = document.querySelector('input[name="docType"]:checked').value;
+            const docNumber = document.getElementById('docNumber').value.trim();
+            const object = document.getElementById('objectSelect').value;
+            
+            if (!docNumber || !object) {
+                alert('⚠️ Заполните номер документа и выберите объект!');
+                return;
+            }
+            
+            if (currentDays.length === 0) {
+                alert('⚠️ Добавьте хотя бы один день выполнения работ!');
+                return;
+            }
+            
+            // Для распоряжения проверяем, что только один день
+            if (docType === 'распоряжение' && currentDays.length > 1) {
+                alert('⚠️ Распоряжение выдается только на один день!');
+                return;
+            }
+            
+            // Проверяем, что для каждого дня заполнены время начала и окончания
+            for (let i = 0; i < currentDays.length; i++) {
+                const day = currentDays[i];
+                if (!day.startTime || !day.endTime) {
+                    alert(`⚠️ Заполните время начала и окончания для дня ${i + 1}!`);
+                    return;
+                }
+            }
+            
+            // Проверяем ограничения для нарядов
+            if (docType === 'наряд') {
+                if (currentDays.length > 30) {
+                    alert('⚠️ Максимальное количество дней для наряда - 30!');
+                    return;
+                }
+                
+                // Сортируем дни по дате для сохранения
+                currentDays.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                // Проверка разницы в 30 календарных дней
+                const firstDate = new Date(currentDays[0].date);
+                const lastDate = new Date(currentDays[currentDays.length - 1].date);
+                const diffTime = Math.abs(lastDate - firstDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 30) {
+                    alert(`❌ Разница между первой и последней датами составляет ${diffDays} дней. Максимум 30 календарных дней для одного наряда!`);
+                    return;
+                }
+            }
+            
+            // Рассчитываем общее количество часов
+            const totalHours = currentDays.reduce((sum, day) => sum + parseFloat(day.hours), 0);
+            
+            const order = {
+                id: Date.now(),
+                docType: docType,
+                docNumber: docNumber,
+                object: object,
+                days: [...currentDays], // Копируем массив дней
+                totalHours: totalHours.toFixed(2),
+                timestamp: new Date().toISOString()
+            };
+            
+            // Получаем существующие записи
+            let orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+            orders.push(order);
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('workOrders', JSON.stringify(orders));
+            
+            // Очищаем форму
+            clearForm();
+            
+            // Обновляем группировку записей
+            loadGroupedOrders();
+            
+            // Обновляем график если он активен
+            if (document.getElementById('chart-tab').classList.contains('active')) {
+                updateChart();
+            }
+            
+            alert('✅ Запись успешно сохранена!');
+        }
+        
+        function clearForm() {
+            document.getElementById('docNumber').value = '';
+            document.getElementById('objectSelect').selectedIndex = 0;
+            document.querySelector('input[name="docType"][value="наряд"]').checked = true;
+            document.querySelector('.doc-type-option:first-child').classList.add('active');
+            document.querySelector('.doc-type-option:last-child').classList.remove('active');
+            
+            // Очищаем дни
+            currentDays = [];
+            document.getElementById('daysContainer').innerHTML = '';
+            addDay(); // Добавляем первый день
+            
+            document.getElementById('totalHours').textContent = '0.00';
+            document.getElementById('dateWarning').style.display = 'none';
+            
+            // Сбрасываем режим редактирования
+            editingOrderId = null;
+        }
+        
+        function loadGroupedOrders() {
+            const orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+            const groupedContainer = document.getElementById('groupedRecords');
+            groupedContainer.innerHTML = '';
+            
+            if (orders.length === 0) {
+                groupedContainer.innerHTML = '<p style="text-align: center; padding: 30px; color: #7f8c8d; font-size: 1.1rem;">Нет записей</p>';
+                return;
+            }
+            
+            // Группируем по месяцам
+            const groupedByMonth = {};
+            const monthOrder = [];
+            
+            orders.forEach(order => {
+                // Берем дату первого дня для группировки
+                const firstDayDate = order.days[0].date;
+                const monthKey = getMonthName(firstDayDate);
+                
+                if (!groupedByMonth[monthKey]) {
+                    groupedByMonth[monthKey] = [];
+                    monthOrder.push(monthKey);
+                }
+                
+                groupedByMonth[monthKey].push(order);
+            });
+            
+            // Сортируем месяцы по дате (обратный порядок)
+            monthOrder.sort((a, b) => {
+                const dateA = new Date(a.split(' ')[1], getMonthIndex(a.split(' ')[0]), 1);
+                const dateB = new Date(b.split(' ')[1], getMonthIndex(b.split(' ')[0]), 1);
+                return dateB - dateA;
+            });
+            
+            // Формируем HTML для каждой группы
+            monthOrder.forEach(month => {
+                const monthOrders = groupedByMonth[month];
+                let monthTotalHours = 0;
+                
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month-group';
+                
+                monthDiv.innerHTML = `
+                    <div class="month-header">${month}</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Тип</th>
+                                <th>Номер</th>
+                                <th>Объект</th>
+                                <th>Дней</th>
+                                <th>Часов</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="month-table-${month.replace(/\s+/g, '-')}">
+                        </tbody>
+                    </table>
+                    <div class="month-total">
+                        💰 Итого за месяц: <span id="month-total-${month.replace(/\s+/g, '-')}">0.00</span> часов
+                    </div>
+                `;
+                
+                groupedContainer.appendChild(monthDiv);
+                
+                const tableBody = document.getElementById(`month-table-${month.replace(/\s+/g, '-')}`);
+                
+                monthOrders.forEach(order => {
+                    monthTotalHours += parseFloat(order.totalHours);
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.docType === 'наряд' ? '📝 Наряд' : '📋 Распоряжение'}</td>
+                        <td>${order.docNumber}</td>
+                        <td>${order.object}</td>
+                        <td>${order.days.length}</td>
+                        <td>${order.totalHours}</td>
+                        <td>
+                            <button class="btn btn-warning" style="padding: 6px 12px; min-width: auto; font-size: 0.85rem;" onclick="viewOrderDetails(${order.id})">ⓘ</button>
+                            <button class="btn btn-edit" style="padding: 6px 12px; min-width: auto; font-size: 0.85rem;" onclick="editOrder(${order.id})">✏️</button>
+                            <button class="btn btn-danger" style="padding: 6px 12px; min-width: auto; font-size: 0.85rem;" onclick="deleteOrder(${order.id})">🗑️</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                document.getElementById(`month-total-${month.replace(/\s+/g, '-')}`).textContent = monthTotalHours.toFixed(2);
+            });
+        }
+        
+        function getMonthIndex(monthName) {
+            const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            return months.indexOf(monthName);
+        }
+        
+        function viewOrderDetails(orderId) {
+            const orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+            const order = orders.find(o => o.id === orderId);
+            
+            if (!order) return;
+            
+            let details = `Детали ${order.docType === 'наряд' ? 'наряда' : 'распоряжения'} №${order.docNumber}:\n\n`;
+            details += `🏢 Объект: ${order.object}\n`;
+            details += `💰 Всего часов: ${order.totalHours}\n\n`;
+            
+            order.days.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            order.days.forEach((day, index) => {
+                const formattedDate = formatDateString(day.date);
+                details += `📅 День ${index + 1}: ${formattedDate}\n`;
+                details += `   🕐 Начало: ${day.startTime}, Окончание: ${day.endTime}\n`;
+                details += `   ⏰ Часов: ${day.hours}\n\n`;
+            });
+            
+            alert(details);
+        }
+        
+        function deleteOrder(orderId) {
+            if (confirm('Вы уверены, что хотите удалить эту запись?')) {
+                let orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+                orders = orders.filter(order => order.id !== orderId);
+                localStorage.setItem('workOrders', JSON.stringify(orders));
+                loadGroupedOrders();
+                
+                // Обновляем график если он активен
+                if (document.getElementById('chart-tab').classList.contains('active')) {
+                    updateChart();
+                }
+                
+                alert('✅ Запись успешно удалена!');
+            }
+        }
+        
+        function clearAllRecords() {
+            if (confirm('Вы уверены, что хотите очистить ВСЕ записи? Это действие нельзя отменить!')) {
+                localStorage.removeItem('workOrders');
+                loadGroupedOrders();
+                
+                // Очищаем график
+                if (hoursChart) {
+                    hoursChart.destroy();
+                    initChart();
+                }
+                
+                alert('✅ Все записи успешно очищены!');
+            }
+        }
+        
+        function exportToExcel() {
+            const orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+            
+            if (orders.length === 0) {
+                alert('❌ Нет данных для выгрузки!');
+                return;
+            }
+            
+            // Определяем текущий месяц и год
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const monthName = now.toLocaleString('ru-RU', { month: 'long' });
+            
+            // Фильтруем записи только за текущий месяц
+            const filteredOrders = orders.filter(order => {
+                // Проверяем, есть ли хотя бы один день в текущем месяце
+                return order.days.some(day => {
+                    const dayDate = new Date(day.date);
+                    return dayDate.getMonth() === currentMonth && dayDate.getFullYear() === currentYear;
+                });
+            });
+            
+            if (filteredOrders.length === 0) {
+                alert(`❌ Нет записей за ${monthName} ${currentYear} года!`);
+                return;
+            }
+            
+            // Подготавливаем данные для Excel
+            const wsData = [
+                ['Тип документа', 'Номер', 'Место выполнения', 'Дата', 'Время начала', 'Время окончания', 'Часов за день']
+            ];
+            
+            let grandTotalHours = 0;
+            
+            filteredOrders.forEach(order => {
+                // Сортируем дни по дате
+                const sortedDays = [...order.days].sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                sortedDays.forEach((day, dayIndex) => {
+                    // Показываем только дни текущего месяца
+                    const dayDate = new Date(day.date);
+                    if (dayDate.getMonth() === currentMonth && dayDate.getFullYear() === currentYear) {
+                        const formattedDate = formatDateString(day.date);
+                        
+                        wsData.push([
+                            dayIndex === 0 ? (order.docType === 'наряд' ? 'Наряд' : 'Распоряжение') : '',
+                            dayIndex === 0 ? order.docNumber : '',
+                            dayIndex === 0 ? order.object : '',
+                            formattedDate,
+                            day.startTime,
+                            day.endTime,
+                            day.hours
+                        ]);
+                    }
+                });
+                
+                // Рассчитываем часы только для дней текущего месяца
+                const monthHours = order.days
+                    .filter(day => {
+                        const dayDate = new Date(day.date);
+                        return dayDate.getMonth() === currentMonth && dayDate.getFullYear() === currentYear;
+                    })
+                    .reduce((sum, day) => sum + parseFloat(day.hours), 0);
+                
+                grandTotalHours += monthHours;
+                
+                // Пустая строка между документами
+                wsData.push(['', '', '', '', '', '', '']);
+            });
+            
+            // Добавляем только общую итоговую строку
+            wsData.push([
+                '',
+                '',
+                '',
+                'ОБЩЕЕ КОЛИЧЕСТВО ЧАСОВ:',
+                '',
+                '',
+                grandTotalHours.toFixed(2)
+            ]);
+            
+            // Создаем лист Excel
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Производительские");
+            
+            // Настройка форматирования
+            const colWidths = [
+                { wch: 15 }, // Тип документа
+                { wch: 15 }, // Номер
+                { wch: 30 }, // Место выполнения
+                { wch: 15 }, // Дата
+                { wch: 12 }, // Время начала
+                { wch: 12 }, // Время окончания
+                { wch: 15 }  // Часов за день
+            ];
+            ws['!cols'] = colWidths;
+            
+            // Генерируем имя файла
+            const fileName = `производительские_${monthName.toLowerCase()}_${currentYear}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            alert(`✅ Файл успешно выгружен!\n📁 ${fileName}\n📋 Всего записей: ${filteredOrders.length}\n💰 Общее количество часов: ${grandTotalHours.toFixed(2)}`);
+        }
+        
+        function initChart() {
+            const ctx = document.getElementById('hoursChart').getContext('2d');
+            hoursChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Отработано часов',
+                        data: [],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#4CAF50',
+                        pointBorderColor: '#FFF',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Статистика рабочих часов',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Часов: ${context.raw}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Количество часов'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Дата'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        function updateChart() {
+            if (!hoursChart) return;
+            
+            const orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+            if (orders.length === 0) {
+                hoursChart.data.labels = ['Нет данных'];
+                hoursChart.data.datasets[0].data = [0];
+                hoursChart.update();
+                updateChartSummary([]);
+                return;
+            }
+            
+            const period = document.getElementById('chartPeriod').value;
+            const chartType = document.getElementById('chartType').value;
+            const selectedObject = document.getElementById('chartObject').value;
+            
+            // Фильтруем записи по объекту
+            const filteredOrders = selectedObject === 'all' 
+                ? orders 
+                : orders.filter(order => order.object === selectedObject);
+            
+            if (filteredOrders.length === 0) {
+                hoursChart.data.labels = ['Нет данных для выбранного объекта'];
+                hoursChart.data.datasets[0].data = [0];
+                hoursChart.update();
+                updateChartSummary([]);
+                return;
+            }
+            
+            // Определяем период для анализа
+            const now = new Date();
+            let startDate = new Date();
+            
+            switch (period) {
+                case 'week':
+                    startDate.setDate(now.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setMonth(now.getMonth() - 1);
+                    break;
+                case 'quarter':
+                    startDate.setMonth(now.getMonth() - 3);
+                    break;
+                case 'year':
+                    startDate.setFullYear(now.getFullYear() - 1);
+                    break;
+            }
+            
+            // Собираем данные в зависимости от вкладки графика
+            let chartData = [];
+            let labels = [];
+            
+            if (currentChartTab === 'daily') {
+                chartData = getDailyChartData(filteredOrders, startDate, now);
+            } else if (currentChartTab === 'monthly') {
+                chartData = getMonthlyChartData(filteredOrders, startDate, now);
+            } else if (currentChartTab === 'byType') {
+                chartData = getChartDataByType(filteredOrders, startDate, now);
+            }
+            
+            // Обновляем график
+            hoursChart.data.labels = chartData.labels;
+            hoursChart.data.datasets[0].data = chartData.data;
+            
+            // Обновляем тип графика
+            hoursChart.config.type = chartType === 'area' ? 'line' : chartType;
+            hoursChart.data.datasets[0].fill = chartType === 'area';
+            
+            // Обновляем цвета в зависимости от типа
+            if (currentChartTab === 'byType') {
+                hoursChart.data.datasets[0].backgroundColor = 'rgba(54, 162, 235, 0.2)';
+                hoursChart.data.datasets[0].borderColor = '#36A2EB';
+                hoursChart.data.datasets[0].pointBackgroundColor = '#36A2EB';
+            } else {
+                hoursChart.data.datasets[0].backgroundColor = chartType === 'area' ? 'rgba(76, 175, 80, 0.1)' : 'transparent';
+                hoursChart.data.datasets[0].borderColor = '#4CAF50';
+                hoursChart.data.datasets[0].pointBackgroundColor = '#4CAF50';
+            }
+            
+            hoursChart.update();
+            updateChartSummary(chartData.data);
+        }
+        
+        function getDailyChartData(orders, startDate, endDate) {
+            const dayMap = {};
+            let currentDate = new Date(startDate);
+            
+            // Инициализируем все дни в периоде
+            while (currentDate <= endDate) {
+                const dateKey = currentDate.toISOString().split('T')[0];
+                dayMap[dateKey] = 0;
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Собираем часы по дням
+            orders.forEach(order => {
+                order.days.forEach(day => {
+                    const dayDate = new Date(day.date);
+                    
+                    if (dayDate >= startDate && dayDate <= endDate) {
+                        const dateKey = dayDate.toISOString().split('T')[0];
+                        if (dayMap[dateKey] !== undefined) {
+                            dayMap[dateKey] += parseFloat(day.hours);
+                        }
+                    }
+                });
+            });
+            
+            // Формируем массивы для графика
+            const labels = [];
+            const data = [];
+            
+            Object.keys(dayMap).sort().forEach(dateKey => {
+                const date = new Date(dateKey);
+                labels.push(formatDateString(dateKey));
+                data.push(parseFloat(dayMap[dateKey].toFixed(2)));
+            });
+            
+            return { labels, data };
+        }
+        
+        function getMonthlyChartData(orders, startDate, endDate) {
+            const monthMap = {};
+            let currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+            
+            // Инициализируем все месяцы в периоде
+            while (currentDate <= endDate) {
+                const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+                monthMap[monthKey] = 0;
+                
+                // Переходим к следующему месяцу
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+            
+            // Собираем часы по месяцам
+            orders.forEach(order => {
+                order.days.forEach(day => {
+                    const dayDate = new Date(day.date);
+                    
+                    if (dayDate >= startDate && dayDate <= endDate) {
+                        const monthKey = `${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}`;
+                        if (monthMap[monthKey] !== undefined) {
+                            monthMap[monthKey] += parseFloat(day.hours);
+                        }
+                    }
+                });
+            });
+            
+            // Формируем массивы для графика
+            const labels = [];
+            const data = [];
+            
+            Object.keys(monthMap).sort().forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const monthName = new Date(parseInt(year), parseInt(month) - 1, 1)
+                    .toLocaleString('ru-RU', { month: 'long' });
+                labels.push(`${monthName} ${year}`);
+                data.push(parseFloat(monthMap[monthKey].toFixed(2)));
+            });
+            
+            return { labels, data };
+        }
+        
+        function getChartDataByType(orders, startDate, endDate) {
+            const typeMap = {
+                'наряд': 0,
+                'распоряжение': 0
+            };
+            
+            // Собираем часы по типам документов
+            orders.forEach(order => {
+                order.days.forEach(day => {
+                    const dayDate = new Date(day.date);
+                    
+                    if (dayDate >= startDate && dayDate <= endDate) {
+                        typeMap[order.docType] += parseFloat(day.hours);
+                    }
+                });
+            });
+            
+            // Формируем массивы для графика
+            const labels = ['Наряды', 'Распоряжения'];
+            const data = [
+                parseFloat(typeMap['наряд'].toFixed(2)),
+                parseFloat(typeMap['распоряжение'].toFixed(2))
+            ];
+            
+            return { labels, data };
+        }
+        
+        function updateChartSummary(data) {
+            if (data.length === 0) {
+                document.getElementById('totalHoursStat').textContent = '0.00';
+                document.getElementById('avgHoursStat').textContent = '0.00';
+                document.getElementById('maxHoursStat').textContent = '0.00';
+                document.getElementById('daysCountStat').textContent = '0';
+                return;
+            }
+            
+            const totalHours = data.reduce((sum, hours) => sum + hours, 0);
+            const avgHours = totalHours / data.length;
+            const maxHours = Math.max(...data);
+            const daysCount = data.length;
+            
+            document.getElementById('totalHoursStat').textContent = totalHours.toFixed(2);
+            document.getElementById('avgHoursStat').textContent = avgHours.toFixed(2);
+            document.getElementById('maxHoursStat').textContent = maxHours.toFixed(2);
+            document.getElementById('daysCountStat').textContent = daysCount;
+        }
+        
+        function switchChartTab(tabName) {
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            currentChartTab = tabName;
+            updateChart();
+        }
+        
+        function downloadChart() {
+            const link = document.createElement('a');
+            link.href = document.getElementById('hoursChart').toDataURL('image/png');
+            link.download = `график_часов_${new Date().toISOString().split('T')[0]}.png`;
+            link.click();
+            alert('✅ График успешно сохранен!');
+        }
+        
+        function resetChartFilters() {
+            document.getElementById('chartPeriod').selectedIndex = 1; // месяц
+            document.getElementById('chartType').selectedIndex = 1; // линейный
+            document.getElementById('chartObject').selectedIndex = 0; // все объекты
+            
+            // Сбрасываем вкладки графика
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector('.chart-tab:first-child').classList.add('active');
+            currentChartTab = 'daily';
+            
+            updateChart();
+            alert('✅ Фильтры сброшены!');
+        }
+        
+        // Новая функция для редактирования записи
+        function editOrder(orderId) {
+            const orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+            const order = orders.find(o => o.id === orderId);
+            
+            if (!order) {
+                alert('Запись не найдена!');
+                return;
+            }
+            
+            // Переключаемся на вкладку "Новая запись"
+            switchTab('main');
+            
+            // Устанавливаем ID редактируемой записи
+            editingOrderId = orderId;
+            
+            // Заполняем форму данными из записи
+            document.getElementById('docNumber').value = order.docNumber;
+            document.getElementById('objectSelect').value = order.object;
+            
+            // Устанавливаем тип документа
+            document.querySelectorAll('input[name="docType"]').forEach(radio => {
+                radio.checked = (radio.value === order.docType);
+            });
+            
+            document.querySelectorAll('.doc-type-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            if (order.docType === 'наряд') {
+                document.querySelector('.doc-type-option:first-child').classList.add('active');
+                maxDays = 30;
+            } else {
+                document.querySelector('.doc-type-option:last-child').classList.add('active');
+                maxDays = 1;
+            }
+            
+            // Загружаем дни из записи
+            currentDays = [...order.days];
+            renderAllDays();
+            updateDaysCount();
+            updateTotalHours();
+            checkDateConstraints();
+            
+            // Прокручиваем к форме
+            document.getElementById('main-tab').scrollIntoView({ behavior: 'smooth' });
+            
+            alert('📝 Режим редактирования включен. Внесите изменения и нажмите "Сохранить запись"');
+        }
+        
+        // Модифицированная функция сохранения для поддержки редактирования
+        function saveOrder() {
+            const docType = document.querySelector('input[name="docType"]:checked').value;
+            const docNumber = document.getElementById('docNumber').value.trim();
+            const object = document.getElementById('objectSelect').value;
+            
+            if (!docNumber || !object) {
+                alert('⚠️ Заполните номер документа и выберите объект!');
+                return;
+            }
+            
+            if (currentDays.length === 0) {
+                alert('⚠️ Добавьте хотя бы один день выполнения работ!');
+                return;
+            }
+            
+            // Для распоряжения проверяем, что только один день
+            if (docType === 'распоряжение' && currentDays.length > 1) {
+                alert('⚠️ Распоряжение выдается только на один день!');
+                return;
+            }
+            
+            // Проверяем, что для каждого дня заполнены время начала и окончания
+            for (let i = 0; i < currentDays.length; i++) {
+                const day = currentDays[i];
+                if (!day.startTime || !day.endTime) {
+                    alert(`⚠️ Заполните время начала и окончания для дня ${i + 1}!`);
+                    return;
+                }
+            }
+            
+            // Проверяем ограничения для нарядов
+            if (docType === 'наряд') {
+                if (currentDays.length > 30) {
+                    alert('⚠️ Максимальное количество дней для наряда - 30!');
+                    return;
+                }
+                
+                // Сортируем дни по дате для сохранения
+                currentDays.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                // Проверка разницы в 30 календарных дней
+                const firstDate = new Date(currentDays[0].date);
+                const lastDate = new Date(currentDays[currentDays.length - 1].date);
+                const diffTime = Math.abs(lastDate - firstDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 30) {
+                    alert(`❌ Разница между первой и последней датами составляет ${diffDays} дней. Максимум 30 календарных дней для одного наряда!`);
+                    return;
+                }
+            }
+            
+            // Рассчитываем общее количество часов
+            const totalHours = currentDays.reduce((sum, day) => sum + parseFloat(day.hours), 0);
+            
+            if (editingOrderId) {
+                // Обновляем существующую запись
+                let orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+                const orderIndex = orders.findIndex(o => o.id === editingOrderId);
+                
+                if (orderIndex !== -1) {
+                    orders[orderIndex] = {
+                        id: editingOrderId,
+                        docType: docType,
+                        docNumber: docNumber,
+                        object: object,
+                        days: [...currentDays],
+                        totalHours: totalHours.toFixed(2),
+                        timestamp: orders[orderIndex].timestamp // Сохраняем исходную дату создания
+                    };
+                    
+                    localStorage.setItem('workOrders', JSON.stringify(orders));
+                    alert('✅ Запись успешно обновлена!');
+                } else {
+                    alert('❌ Запись для редактирования не найдена!');
+                }
+                
+                editingOrderId = null;
+            } else {
+                // Создаем новую запись
+                const order = {
+                    id: Date.now(),
+                    docType: docType,
+                    docNumber: docNumber,
+                    object: object,
+                    days: [...currentDays],
+                    totalHours: totalHours.toFixed(2),
+                    timestamp: new Date().toISOString()
+                };
+                
+                let orders = JSON.parse(localStorage.getItem('workOrders')) || [];
+                orders.push(order);
+                localStorage.setItem('workOrders', JSON.stringify(orders));
+                alert('✅ Запись успешно сохранена!');
+            }
+            
+            // Очищаем форму
+            clearForm();
+            
+            // Обновляем группировку записей
+            loadGroupedOrders();
+            
+            // Обновляем график если он активен
+            if (document.getElementById('chart-tab').classList.contains('active')) {
+                updateChart();
+            }
+        }
+        
+        // Функция для закрытия модального окна
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editingOrderId = null;
+        }
+        
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        };
+    </script>
+</body>
+</html>
